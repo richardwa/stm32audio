@@ -1,36 +1,27 @@
+#include "synth.h"
+#include "notes.h"
 
+#define SAMPLE_RATE 44100
+#define TUNING 440
 #define led PC13
 
-//playing at 22 micros period, we need the buffer to cover at least 0.05 seconds for the low notes
-//highest pitch alternating +/- which comes to 20khz
-//lowest pitch is all one period in 0.05
-#define bufferLength 2000
-#define bufferHeight 256
-#define sampleRate 22000
-int8_t playbuffer[bufferLength] = {0}; //contains negatives
-volatile uint16_t bufferPos = 0;
+uint8_t playbuffer; //next value to play
+volatile uint32_t currentTick; // will overflow every 24 hours @22 microsecond ticks
 void play() {
-  uint8_t value = playbuffer[bufferPos] + bufferHeight / 2; //convert to unsigned
-  uint8_t notval = ~value;
-  GPIOA->regs->BSRR = value | (notval << 16);
-  bufferPos = (bufferPos + 1) % bufferLength;
+  //send buffer to pins without variable delay
+  uint8_t clearbits = ~playbuffer;
+  GPIOA->regs->BSRR = playbuffer | (clearbits << 16);
+  currentTick++;
+  
+  //now we have 22 microseconds @44.1kHz to get next play value
+  playbuffer = synth_get_wave(currentTick);
 }
 
-void printBuffer() {
-  for (uint16_t i = 0; i < bufferLength; i++) {
-    Serial.print(playbuffer[i]+bufferHeight / 2,HEX);
-    Serial.print(" ");
-  }
-  Serial.println();
-}
 
 // the setup function runs once when you press reset or power the board
 void setup() {
   Serial.begin(115200);
-  printBuffer();
-  sawtooth(440);
-  sawtooth(660);
-  printBuffer();
+  notes_init(SAMPLE_RATE, TUNING);
 
   // initialize digital pin 13 as an output.
   pinMode(led, OUTPUT);
@@ -48,11 +39,11 @@ void setup() {
   pinMode(PA6, OUTPUT);
   pinMode(PA7, OUTPUT);
 
-  //configure the sample timer
+  //configure the sample play timer
   HardwareTimer sampleTimer(1);
   sampleTimer.pause();
 
-  sampleTimer.setPeriod(1000000 / sampleRate);
+  sampleTimer.setPeriod(1000000 / SAMPLE_RATE);
   sampleTimer.setMode(TIMER_CH1, TIMER_OUTPUT_COMPARE);
   sampleTimer.setCompare(TIMER_CH1, 1);
   sampleTimer.attachInterrupt(TIMER_CH1, play);
@@ -63,16 +54,7 @@ void setup() {
 }
 
 
-//set a sawtooth wave into buffer;
-void sawtooth(uint16_t freq) {
-  uint16_t period = sampleRate / freq;
-  for (uint16_t i = 0; i < bufferLength; i++) {
-    playbuffer[i] += ((i % period) * bufferHeight / period - bufferHeight / 2)/2;
-  }
-}
-
-//taylor series cos approx: 1 - x^2/2!  + x^4/4!
-#define inputLength 10
+#define inputLength 5
 char inputBuffer[inputLength];
 uint8_t inputIndex = 0;
 boolean inputDone = false;
@@ -92,8 +74,6 @@ void loop() {
     Serial.write(inputBuffer, inputIndex);
     Serial.println();
     uint16_t value = atol(inputBuffer);
-    sawtooth(value);
-    printBuffer();
     inputIndex = 0;
     inputDone = false;
   }
