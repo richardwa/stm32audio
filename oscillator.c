@@ -13,10 +13,10 @@ uint16_t triangle(uint32_t period, uint32_t phase)
 {
   uint32_t current = phase % period;
   uint32_t halfperiod = period / 2;
-  if (current < halfperiod) {
+  if (current <= halfperiod) {
     return current * 2 * LEVEL / period;
   } else {
-    return (halfperiod - current) * 2 * LEVEL / period;
+    return (period - current) * 2 * LEVEL / period;
   }
 }
 
