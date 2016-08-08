@@ -1,7 +1,7 @@
 #include "oscillator.h"
 #include "debug.h"
 
-#define LEVEL 100
+#define LEVEL 500
 
 int32_t sawtooth(int32_t period, uint32_t phase)
 {
@@ -48,6 +48,7 @@ int32_t square(int32_t period, uint32_t phase)
 //
 #define PI_INT 3
 #define cube(x) ((x)*(x)*(x))
+#define square(x) ((x)*(x))
 int32_t sine(int32_t period, uint32_t phase)
 {
 
@@ -63,6 +64,22 @@ int32_t sine(int32_t period, uint32_t phase)
 
   //correct the phase after all the shifting, take the negative
   return x * PI_INT * -LEVEL / period + (LEVEL / 12) * cube(2 * PI_INT) * cube(x) / cube(period) ;
+
+}
+
+int32_t sine2(int32_t period, uint32_t phase)
+{
+
+  int32_t x = phase % period - period/2;
+
+  if (x > period / 4) {
+    x =  period / 4 - x;
+  } else if (x < -1 * period / 4) {
+    x = -1 * (period / 4 + x);
+  }
+  
+  
+  return  (-1 * LEVEL * cube(4)*x/period*x/period + LEVEL * square(4) *x/period + LEVEL * 4 )*x/period;
 
 }
 

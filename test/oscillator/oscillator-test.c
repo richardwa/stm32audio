@@ -4,7 +4,7 @@
 #include "oscillator.h"
 
 
-#define period  100
+#define period  2000
 #define samples (2*period)
 int main()
 {
@@ -13,7 +13,7 @@ int main()
 //    printf("%d,", sawtooth(500,i));
 //    printf("%d,", triangle(period,i));
 //    printf("%d,", square(period,i));
-    printf("%d,", sine(period,i));
+    printf("%d,", sine2(period,i));
     printf("\n");
   }
   return 0;

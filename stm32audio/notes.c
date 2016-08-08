@@ -31,15 +31,15 @@ void notes_init(uint32_t sampleRate, uint32_t tuning)
 
   //top half
   tmp = tuning;
-  for (i = 70; i < 128; i++) {
+  for (i = 69; i < 127; i++) {
     tmp *= _12_ROOT_2;
-    note_periods[i] = sampleRate/tmp;
+    note_periods[i+1] = sampleRate/tmp;
   }
 
   //bottom half
   tmp = tuning;
-  for (i = 68; i <= 0; i--) {
+  for (i = 69; i > 0; i--) {
     tmp /= _12_ROOT_2;
-    note_periods[i] = sampleRate/tmp;
+    note_periods[i-1] = sampleRate/tmp;
   }
 }

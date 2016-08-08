@@ -1,4 +1,4 @@
-program_NAME := oscillator-test
+program_NAME := notes-test
 program_C_SRCS := $(wildcard *.c)
 program_C_SRCS += $(wildcard ../../stm32audio/*.c)
 program_CXX_SRCS := $(wildcard *.cpp)
