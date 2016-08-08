@@ -22,7 +22,7 @@ struct Voice {
   uint8_t sustain; //is a level
   uint16_t rel;    //is a duration
 
-  uint16_t (*oscillator)(uint32_t period, uint32_t phase);
+  int32_t (*oscillator)(int32_t period, uint32_t phase);
 };
 
 struct Voice model = { 
@@ -45,7 +45,6 @@ int32_t synth_get_wave(uint32_t tick)
       temp += 
         ((v->oscillator)(v->period, tick)   //invoke oscillator
           * (v->volume / MAX_VOICE_VOLUME)  //apply volume
-          - (0xFFFF/2)                      //shift to signed int
         ) / POLYPHONY ;                     //reduce loudness by number of voices
         
       v->ticks++;
@@ -56,7 +55,7 @@ int32_t synth_get_wave(uint32_t tick)
 
 void synth_set_oscillator(uint8_t index)
 {
-  model.oscillator = &sawtooth; 
+  model.oscillator = &sine; 
 }
 
 void synth_note_on(uint8_t index, uint8_t velocity) 
