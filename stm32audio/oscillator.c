@@ -1,9 +1,11 @@
 #include "oscillator.h"
 #include "debug.h"
 
-#define LEVEL 10000
+//level should not go beyond signed int16
+#define LEVEL 1000
 
 //since our sine cubic coeffcients are floats, we need to incorporate LEVEL into it
+//update these as level is updated
 #define SIN_CUBIC_A -429 // -0.4292036732
 #define SIN_CUBIC_B -141 // -0.1415926536
 #define SIN_CUBIC_C 1570 //  1.570796327
@@ -35,17 +37,16 @@ int32_t square(int32_t period, uint32_t phase)
 
 
 //cubic aprroximation of sine
-// base function: f(x) = ax^3 + bx^2 + cx
-//               f'(x) = 3ax^2 + 2bx + c
+// base function: 
+//  f(x)  =  ax^3 +  bx^2 + cx
+//  f'(x) = 3ax^2 + 2bx   + c
 //
 // desired conditions, matching sin(pi/2 *x):
-// f(0) = 0, f(1) = 1, f'(0) = pi/2 , f'(1) = 0
+//  f(0) = 0, f(1) = 1, f'(0) = pi/2 , f'(1) = 0
 // solve the system we get:
-// a = pi/2 - 2, b = -pi + 3, c = pi/2
-//
-// a ~ -0.4292036732
-// b ~ -0.1415926536
-// c ~ 1.570796327
+//  a = pi/2 - 2 
+//  b = -pi + 3
+//  c = pi/2
 //
 // scale x, x->x/B
 // scale y, f->A*f
