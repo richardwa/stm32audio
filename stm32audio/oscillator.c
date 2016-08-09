@@ -50,6 +50,8 @@ int32_t square(int32_t period, uint32_t phase)
 // scale x, x->x/B
 // scale y, f->A*f
 //   f(x) = -B(a(x/A)^3 + b(x/A)^2 + c(x/A))
+//
+// implemented with only integer calculations and taking care to not overflow int32
 int32_t sine(int32_t period, uint32_t phase)
 {
 
