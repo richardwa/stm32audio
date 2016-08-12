@@ -26,6 +26,10 @@ int32_t triangle(int32_t period, uint32_t phase)
     return (period - x) * 2 * LEVEL / period - LEVEL/2;
   }
 }
+int32_t test(int32_t period, uint32_t phase)
+{
+  return sine(period,sine(period*7/5,phase)*period/LEVEL+phase);
+}
 
 int32_t square(int32_t period, uint32_t phase)
 {

@@ -7,7 +7,7 @@
 //highest pitch alternating +/- which comes to 20khz
 //lowest pitch is all one period in 0.05
 
-#define POLYPHONY 8
+#define POLYPHONY 4
 #define MAX_VOICE_VOLUME 0xFF
 
 struct Voice {
@@ -27,7 +27,7 @@ struct Voice {
 
 struct Voice model = { 
   .volume = 1,
-  .oscillator = &triangle
+  .oscillator = &test
 };
 
 int8_t noteMap[128] = {-1}; //holds index of activeVoices

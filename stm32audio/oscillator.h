@@ -10,6 +10,7 @@ int32_t sawtooth(int32_t period, uint32_t phase);
 int32_t triangle(int32_t period, uint32_t phase);
 int32_t square(int32_t period, uint32_t phase);
 int32_t sine(int32_t period, uint32_t phase);
+int32_t test(int32_t period, uint32_t phase);
 
 #ifdef __cplusplus
 }
