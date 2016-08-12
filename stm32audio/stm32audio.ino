@@ -1,7 +1,7 @@
 #include "synth.h"
 #include "notes.h"
 
-#define SAMPLE_RATE 44100
+#define SAMPLE_RATE 31250
 #define TUNING 440
 #define led PC13
 
@@ -12,9 +12,9 @@ void play() {
   uint8_t clearbits = ~playbuffer;
   GPIOA->regs->BSRR = playbuffer | (clearbits << 16);
   currentTick++;
-  
+
   //now we have 22 microseconds @44.1kHz to get next play value
-  playbuffer = synth_get_wave(currentTick);
+  playbuffer = synth_get_wave(currentTick) * 128 / 1000 + 128;
 }
 
 
@@ -22,6 +22,8 @@ void play() {
 void setup() {
   Serial.begin(115200);
   notes_init(SAMPLE_RATE, TUNING);
+  synth_note_on(69, 255);
+  synth_note_on(76, 255);
 
   // initialize digital pin 13 as an output.
   pinMode(led, OUTPUT);
@@ -53,29 +55,28 @@ void setup() {
 
 }
 
-
-#define inputLength 5
-char inputBuffer[inputLength];
-uint8_t inputIndex = 0;
-boolean inputDone = false;
+void serialEventRun(void) {
+  String inputString = Serial.readString();
+  if (inputString != "") {
+    commandRecieved(inputString);
+  }
+}
+void commandRecieved(String cmd) {
+  char chars[6];
+  uint8_t cmdVal;
+  switch (cmd.charAt(0)) {
+    case 's':
+      cmd.substring(1).toCharArray(chars, sizeof(chars));
+      cmdVal = atoi( chars );
+      synth_note_on(cmdVal, 255);
+      break;
+  }
+  Serial.println(cmd);
+}
 void loop() {
   // send data only when you receive data:
   if (Serial.available() > 0) {
-    char in = Serial.read();
-    inputBuffer[inputIndex] = in;
-    if (in == '\n' || inputIndex == inputLength - 1) {
-      inputDone = true;
-    } else {
-      inputIndex++;
-    }
-  }
-  
-  if (inputDone) {
-    Serial.write(inputBuffer, inputIndex);
-    Serial.println();
-    uint16_t value = atol(inputBuffer);
-    inputIndex = 0;
-    inputDone = false;
+    serialEventRun();
   }
 }
 

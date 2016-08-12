@@ -1,13 +1,14 @@
 program_NAME := synth-test
 program_C_SRCS := $(wildcard *.c)
-program_C_SRCS += $(wildcard ../../*.c)
+program_C_SRCS += $(wildcard ../../stm32audio/*.c)
 program_CXX_SRCS := $(wildcard *.cpp)
 program_C_OBJS := ${program_C_SRCS:.c=.o}
 program_CXX_OBJS := ${program_CXX_SRCS:.cpp=.o}
 program_OBJS := $(program_C_OBJS) $(program_CXX_OBJS)
-program_INCLUDE_DIRS := ../../
+program_INCLUDE_DIRS := ../../stm32audio/
 program_LIBRARY_DIRS :=
 program_LIBRARIES :=
+
 
 CPPFLAGS += $(foreach includedir,$(program_INCLUDE_DIRS),-I$(includedir))
 LDFLAGS += $(foreach librarydir,$(program_LIBRARY_DIRS),-L$(librarydir))
@@ -28,5 +29,5 @@ clean:
 distclean: clean
 
 plot: $(program_NAME)
-	./$(program_NAME) | gnuplot -p -e "plot '<cat'"
+	./$(program_NAME) | gnuplot -p -e "plot '<cat' using 1 with lines"
 

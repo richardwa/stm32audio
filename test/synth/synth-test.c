@@ -14,8 +14,19 @@ int main()
   uint32_t playbuffer;
   notes_init(SAMPLE_RATE, TUNING);
   synth_note_on(69, 255);
+  synth_note_on(69, 255);
+  synth_note_on(69, 255);
+  synth_note_on(69, 255);
+  
+  synth_note_on(69, 255);
+  synth_note_on(69, 255);
+  synth_note_on(69, 255);
+  synth_note_on(69, 255);
+  
+
+  
   //synth_note_on(75, 255);
-  for (i = 0; i < 1000; i++) {
+  for (i = 0; i < 2000; i++) {
     playbuffer = synth_get_wave(i);
     printf("%d\n", playbuffer);
   }
