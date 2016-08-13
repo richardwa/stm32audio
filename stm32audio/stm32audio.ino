@@ -70,10 +70,18 @@ void commandRecieved(String cmd) {
       cmdVal = atoi( chars );
       synth_note_on(cmdVal, 255);
       break;
+    case 'e':
+      cmd.substring(1).toCharArray(chars, sizeof(chars));
+      cmdVal = atoi( chars );
+      synth_note_off(cmdVal);
+      break;
   }
   Serial.println(cmd);
 }
 void loop() {
+  if (currentTick % 100 == 0){
+    synth_env_update();
+  }
   // send data only when you receive data:
   if (Serial.available() > 0) {
     serialEventRun();

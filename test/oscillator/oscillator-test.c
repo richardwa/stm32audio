@@ -6,7 +6,7 @@
 
 
 #define PERIOD  100
-#define SAMPLES (10*PERIOD)
+#define SAMPLES (50*PERIOD)
 
 //test function for reference
 #define PI 3.14159265
