@@ -1,12 +1,26 @@
 #include "synth.h"
 #include "notes.h"
 
-#define SAMPLE_RATE 31250
 #define TUNING 440
 #define led PC13
 
+#define OVERCLOCKED 1
+//overclocked to 128 mhz
+
+#if OVERCLOCKED == 1
+#define SAMPLE_RATE 36000
+#define TIMER_PERIOD 1800000 / SAMPLE_RATE
+#define BAUD 64800
+#else
+#define SAMPLE_RATE 31250
+#define TIMER_PERIOD 1000000 / SAMPLE_RATE
+#define BAUD 115200
+#endif
+
+
 uint8_t playbuffer; //next value to play
 volatile uint32_t currentTick; // will overflow every 24 hours @22 microsecond ticks
+
 void play() {
   //send buffer to pins without variable delay
   uint8_t clearbits = ~playbuffer;
@@ -18,9 +32,9 @@ void play() {
 }
 
 
-// the setup function runs once when you press reset or power the board
+HardwareTimer sampleTimer(1);
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(BAUD);
   notes_init(SAMPLE_RATE, TUNING);
   synth_note_on(69, 255);
   synth_note_on(76, 255);
@@ -42,10 +56,8 @@ void setup() {
   pinMode(PA7, OUTPUT);
 
   //configure the sample play timer
-  HardwareTimer sampleTimer(1);
   sampleTimer.pause();
-
-  sampleTimer.setPeriod(1000000 / SAMPLE_RATE);
+  sampleTimer.setPeriod(TIMER_PERIOD);
   sampleTimer.setMode(TIMER_CH1, TIMER_OUTPUT_COMPARE);
   sampleTimer.setCompare(TIMER_CH1, 1);
   sampleTimer.attachInterrupt(TIMER_CH1, play);
@@ -75,11 +87,15 @@ void commandRecieved(String cmd) {
       cmdVal = atoi( chars );
       synth_note_off(cmdVal);
       break;
+    case 'd':
+      Serial.println(sampleTimer.getPrescaleFactor());
+      Serial.println(sampleTimer.getOverflow());
+      break;
   }
   Serial.println(cmd);
 }
 void loop() {
-  if (currentTick % 100 == 0){
+  if (currentTick % 100 == 0) {
     synth_env_update();
   }
   // send data only when you receive data:
