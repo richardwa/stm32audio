@@ -2,7 +2,7 @@
 #include "debug.h"
 
 //level should not go beyond signed int16
-#define LEVEL 1000
+#define LEVEL OSCILLATOR_LEVEL
 
 //since our sine cubic coeffcients are floats, we need to incorporate LEVEL into it
 //update these as level is updated

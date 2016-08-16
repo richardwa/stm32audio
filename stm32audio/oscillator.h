@@ -5,6 +5,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#define OSCILLATOR_LEVEL 30000
 
 int32_t sawtooth(int32_t period, uint32_t phase);
 int32_t triangle(int32_t period, uint32_t phase);

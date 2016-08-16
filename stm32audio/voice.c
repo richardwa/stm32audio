@@ -30,7 +30,7 @@ void voice_update(struct Voice *v) {
         }
         break;
       case 3: //sustain
-        if (v->sustain < 0xFF && v->ticks % (v->sustain * v->period / 100 ) == 0) {
+        if (v->sustain < 0xFF && v->ticks % v->sustain == 0) {
           v->volume--;
         }
         break;

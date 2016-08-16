@@ -8,25 +8,25 @@
 //highest pitch alternating +/- which comes to 20khz
 //lowest pitch is all one period in 0.05
 
-#define POLYPHONY 4
+#define POLYPHONY 8
 #define MAX_VOICE_VOLUME 0xFF
 
 struct Voice model = {
   .volume = 1,
   .ticks = 0,
-  .oscillator = &test,
+  .oscillator = &sine,
   .adsr_phase = 1,
   .attack = 1,
   .decay = 20,
-  .sustain = 150,
-  .rel = 2
+  .sustain = 0xFF,
+  .rel = 4
 };
 
 int8_t noteMap[128] = { -1}; //holds index of activeVoices
 struct Voice voices[POLYPHONY];
 
 //query and sum voices for current wave amplitude
-int32_t synth_get_wave(uint32_t tick)
+int16_t synth_get_wave(uint32_t tick)
 {
   int32_t temp = 0;
   uint8_t i;
@@ -35,11 +35,17 @@ int32_t synth_get_wave(uint32_t tick)
     if (v->volume > 0) {
       temp +=
         (v->oscillator)(v->period, tick)   //invoke oscillator
-        * v->volume / MAX_VOICE_VOLUME  //apply volume
-        / POLYPHONY ;                     //reduce loudness by number of voices
+        * v->volume / MAX_VOICE_VOLUME;  //apply volume 
     }
   }
-  return temp;
+  
+  if (temp > INT16_MAX){
+    return INT16_MAX;
+  } else if (temp < INT16_MIN){
+    return INT16_MIN;
+  } else{
+    return temp;
+  }
 }
 
 void synth_env_update() {
@@ -60,7 +66,7 @@ void synth_note_on(uint8_t index, uint8_t velocity)
   for (i = 0; i < POLYPHONY; i++) {
     struct Voice *v = &voices[i];
     dprintf("finding slot %d %d\n", i, v->volume);
-    if (v->volume == 0) {
+    if (v->volume == 0 || v->period == note_periods[index]) {
       noteMap[index] = i; //save index for note off to find us
       dprintf("setting voice %d\n", i);
       *v = model;
