@@ -1,42 +1,35 @@
 #include "oscillator.h"
 #include "debug.h"
 
-//level should not go beyond signed int16
-#define LEVEL OSCILLATOR_LEVEL
 
-//since our sine cubic coeffcients are floats, we need to incorporate LEVEL into it
-//update these as level is updated
-#define SIN_CUBIC_A -429 // -0.4292036732
-#define SIN_CUBIC_B -141 // -0.1415926536
-#define SIN_CUBIC_C 1570 //  1.570796327
-
-int32_t sawtooth(int32_t period, uint32_t phase)
+int16_t sawtooth(uint16_t vol, uint16_t period, uint32_t phase)
 {
   dprintf("sawtooth %d %d", period, phase);
-  return (phase % period) * LEVEL / period - LEVEL / 2;
+  return (phase % period) * vol / period - vol / 2;
 }
 
-int32_t triangle(int32_t period, uint32_t phase)
+int16_t triangle(uint16_t vol, uint16_t period, uint32_t phase)
 {
   uint32_t x = phase % period;
   uint32_t halfperiod = period / 2;
   if (x < halfperiod) {
-    return x * 2 * LEVEL / period - LEVEL / 2;
+    return x * 2 * vol / period - vol / 2;
   } else {
-    return (period - x) * 2 * LEVEL / period - LEVEL / 2;
+    return (period - x) * 2 * vol / period - vol / 2;
   }
 }
-int32_t test(int32_t period, uint32_t phase)
+
+int16_t test(uint16_t vol, uint16_t period, uint32_t phase)
 {
-  return triangle(period, triangle(period * 7/5, phase) * period / LEVEL  + phase);
+  return sine(vol, period, sine(vol, period * 7/5, phase) + phase);
 }
 
-int32_t square(int32_t period, uint32_t phase)
+int16_t square(uint16_t vol, uint16_t period, uint32_t phase)
 {
   if (phase % period < period / 2)
-    return LEVEL;
+    return vol/2;
   else
-    return -LEVEL;
+    return -vol/2;
 }
 
 
@@ -57,7 +50,13 @@ int32_t square(int32_t period, uint32_t phase)
 //   f(x) = -B(a(x/A)^3 + b(x/A)^2 + c(x/A))
 //
 // implemented with only integer calculations and taking care to not overflow int32
-int32_t sine(int32_t period, uint32_t phase)
+
+//since our sine cubic coeffcients are floats, we need to incorporate LEVEL into it
+//update these as level is updated
+#define SIN_CUBIC_A -4292 // -0.4292036732
+#define SIN_CUBIC_B -1415 // -0.1415926536
+#define SIN_CUBIC_C 15707 //  1.570796327
+int16_t sine(uint16_t vol, uint16_t period, uint32_t phase)
 {
 
   int32_t x = phase % period;

@@ -5,13 +5,12 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-#define OSCILLATOR_LEVEL 30000
 
-int32_t sawtooth(int32_t period, uint32_t phase);
-int32_t triangle(int32_t period, uint32_t phase);
-int32_t square(int32_t period, uint32_t phase);
-int32_t sine(int32_t period, uint32_t phase);
-int32_t test(int32_t period, uint32_t phase);
+int16_t sawtooth(uint16_t vol, uint16_t period, uint32_t phase);
+int16_t triangle(uint16_t vol, uint16_t period, uint32_t phase);
+int16_t square(uint16_t vol, uint16_t period, uint32_t phase);
+int16_t sine(uint16_t vol, uint16_t period, uint32_t phase);
+int16_t test(uint16_t vol, uint16_t period, uint32_t phase);
 
 #ifdef __cplusplus
 }

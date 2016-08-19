@@ -6,18 +6,19 @@ extern "C" {
 
 struct Voice {
   //wave characteristics
-  uint8_t volume;   //loudness -- 0 indicates voice is off
-  uint8_t velocity;  //how hard was it hit
+  int32_t volume;   //should be under 16bits, but using 32bit for intermediate calculations
+  int32_t velocity; //should be under 16bits, but using 32bit for intermediate calculations
   uint16_t period; //pitch
-  int32_t (*oscillator)(int32_t period, uint32_t phase);
+  int16_t (*oscillator)(uint16_t vol, uint16_t period, uint32_t phase);
 
   //adsr envelope
   uint32_t ticks;
   uint8_t adsr_phase;
-  uint8_t attack; // rate
+  
+  int8_t attack; // rate
   uint8_t decay;  //percent of velocity
-  uint8_t sustain; //rate
-  uint8_t rel;    //rate
+  int8_t sustain; //rate
+  int8_t rel;    //rate
 
 };
 

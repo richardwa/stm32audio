@@ -8,18 +8,17 @@
 //highest pitch alternating +/- which comes to 20khz
 //lowest pitch is all one period in 0.05
 
-#define POLYPHONY 8
-#define MAX_VOICE_VOLUME 0xFF
+#define POLYPHONY 9
 
-struct Voice model = {
+const struct Voice model = {
   .volume = 1,
   .ticks = 0,
-  .oscillator = &sine,
+  .oscillator = &square,
   .adsr_phase = 1,
-  .attack = 1,
-  .decay = 20,
-  .sustain = 0xFF,
-  .rel = 4
+  .attack = 50,
+  .decay = 200,
+  .sustain = -1,
+  .rel = 50
 };
 
 int8_t noteMap[128] = { -1}; //holds index of activeVoices
@@ -33,9 +32,7 @@ int16_t synth_get_wave(uint32_t tick)
   for ( i = 0; i < POLYPHONY; i++) {
     struct Voice *v = &voices[i];
     if (v->volume > 0) {
-      temp +=
-        (v->oscillator)(v->period, tick)   //invoke oscillator
-        * v->volume / MAX_VOICE_VOLUME;  //apply volume 
+      temp += (v->oscillator)(v->volume, v->period, tick);   //invoke oscillator
     }
   }
   
@@ -55,11 +52,6 @@ void synth_env_update() {
   }
 }
 
-void synth_set_oscillator(uint8_t index)
-{
-  model.oscillator = &sine;
-}
-
 void synth_note_on(uint8_t index, uint8_t velocity)
 {
   uint8_t i;
@@ -70,7 +62,7 @@ void synth_note_on(uint8_t index, uint8_t velocity)
       noteMap[index] = i; //save index for note off to find us
       dprintf("setting voice %d\n", i);
       *v = model;
-      v->velocity = velocity;
+      v->velocity = velocity * 0xFF;
       v->period = note_periods[index];
       dprintf("voice set %d\n", v->volume);
       break;
