@@ -108,14 +108,23 @@ void serialEventRun(void) {
     commandRecieved(inputString);
   }
 }
+uint8_t note = 69;
+uint8_t vol = 0xFF;
 void commandRecieved(String cmd) {
   char chars[6];
   uint8_t tmp;
   switch (cmd.charAt(0)) {
+    case 'v':
+      cmd.substring(1).toCharArray(chars, sizeof(chars));
+      tmp = atoi( chars );
+      vol = tmp;
+      synth_note_on(note, vol);
+      break;
     case 's':
       cmd.substring(1).toCharArray(chars, sizeof(chars));
       tmp = atoi( chars );
-      synth_note_on(tmp, 255);
+      note = tmp;
+      synth_note_on(note, vol);
       break;
     case 'e':
       cmd.substring(1).toCharArray(chars, sizeof(chars));
@@ -142,7 +151,7 @@ void commandRecieved(String cmd) {
 
 
 void loop() {
-  if (currentTick % 32 == 0) {
+  if (currentTick % 200 == 0) {
     synth_env_update();
   }
   

@@ -13,7 +13,7 @@ void handle_increase(int8_t rate, struct Voice *v) {
     v->volume += rate;
   } else if (rate == 0) {
     //no change
-  } else if ((v->ticks % rate) == 0) {
+  } else if ((v->ticks % -rate) == 0) {
     //slow
     v->volume++;
   }
@@ -24,7 +24,7 @@ void handle_decrease(int8_t rate, struct Voice *v) {
     v->volume -= rate;
   } else if (rate == 0) {
     //no change
-  } else if ((v->ticks % rate) == 0) {
+  } else if ((v->ticks % -rate) == 0) {
     //slow
     v->volume--;
   }

@@ -24,12 +24,13 @@ int16_t test(uint16_t vol, uint16_t period, uint32_t phase)
   return sine(vol, period, sine(vol, period * 7/5, phase) + phase);
 }
 
+//square wave is 2 twice as loud, so reducing its peak more
 int16_t square(uint16_t vol, uint16_t period, uint32_t phase)
 {
   if (phase % period < period / 2)
-    return vol/2;
+    return vol/4;
   else
-    return -vol/2;
+    return -vol/4;
 }
 
 
@@ -53,9 +54,9 @@ int16_t square(uint16_t vol, uint16_t period, uint32_t phase)
 
 //since our sine cubic coeffcients are floats, we need to incorporate LEVEL into it
 //update these as level is updated
-#define SIN_CUBIC_A -4292 // -0.4292036732
-#define SIN_CUBIC_B -1415 // -0.1415926536
-#define SIN_CUBIC_C 15707 //  1.570796327
+#define SIN_CUBIC_A(vol) vol * -4292 / 10000 // -0.4292036732
+#define SIN_CUBIC_B(vol) vol * -1416 / 10000 // -0.1415926536
+#define SIN_CUBIC_C(vol) vol * 15708 / 10000 //  1.570796327
 int16_t sine(uint16_t vol, uint16_t period, uint32_t phase)
 {
 
@@ -64,27 +65,27 @@ int16_t sine(uint16_t vol, uint16_t period, uint32_t phase)
 
   switch (section) {
     case 0:  //the is the fist quarter of the the wave
-      return SIN_CUBIC_A * 4 * 4 * 4 * x / period * x / period * x / period
-             + SIN_CUBIC_B * 4 * 4 * x / period * x / period
-             + SIN_CUBIC_C * 4 * x / period;
+      return SIN_CUBIC_A(vol) * 4 * 4 * 4 * x / period * x / period * x / period
+             + SIN_CUBIC_B(vol) * 4 * 4 * x / period * x / period
+             + SIN_CUBIC_C(vol) * 4 * x / period;
     case 1:
       x =  period / 2 - x; // mirror flip into first quater
-      return SIN_CUBIC_A * 4 * 4 * 4 * x / period * x / period * x / period
-             + SIN_CUBIC_B * 4 * 4 * x / period * x / period
-             + SIN_CUBIC_C * 4 * x / period;
+      return SIN_CUBIC_A(vol) * 4 * 4 * 4 * x / period * x / period * x / period
+             + SIN_CUBIC_B(vol) * 4 * 4 * x / period * x / period
+             + SIN_CUBIC_C(vol) * 4 * x / period;
     case 2:
       x =  x - period / 2; // translate to first quater
       //negative of first half
-      return -1 * SIN_CUBIC_A * 4 * 4 * 4 * x / period * x / period * x / period
-             - SIN_CUBIC_B * 4 * 4 * x / period * x / period
-             - SIN_CUBIC_C * 4 * x / period;
+      return -1 * SIN_CUBIC_A(vol) * 4 * 4 * 4 * x / period * x / period * x / period
+             - SIN_CUBIC_B(vol) * 4 * 4 * x / period * x / period
+             - SIN_CUBIC_C(vol) * 4 * x / period;
     case 3:
       x =  x - period / 2; // translate to second quater
       x =  period / 2 - x; // mirror flip into first quater
       //negative of first half
-      return -1 * SIN_CUBIC_A * 4 * 4 * 4 * x / period * x / period * x / period
-             - SIN_CUBIC_B * 4 * 4 * x / period * x / period
-             - SIN_CUBIC_C * 4 * x / period;
+      return -1 * SIN_CUBIC_A(vol) * 4 * 4 * 4 * x / period * x / period * x / period
+             - SIN_CUBIC_B(vol) * 4 * 4 * x / period * x / period
+             - SIN_CUBIC_C(vol) * 4 * x / period;
 
   };
 }

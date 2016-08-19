@@ -6,8 +6,8 @@ extern "C" {
 
 struct Voice {
   //wave characteristics
-  int32_t volume;   //should be under 16bits, but using 32bit for intermediate calculations
-  int32_t velocity; //should be under 16bits, but using 32bit for intermediate calculations
+  int32_t volume;   //should be under 16bits, but using 32bit to prevent intermediate overflows
+  int32_t velocity; //should be under 16bits
   uint16_t period; //pitch
   int16_t (*oscillator)(uint16_t vol, uint16_t period, uint32_t phase);
 
