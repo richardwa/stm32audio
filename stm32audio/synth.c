@@ -13,11 +13,11 @@
 const struct Voice model = {
   .volume = 1,
   .ticks = 0,
-  .oscillator = &sine,
+  .oscillator = &triangle,
   .adsr_phase = 1,
   .attack = 100,
   .decay = 200,
-  .sustain = 0,
+  .sustain = 1,
   .rel = 100
 };
 
@@ -35,6 +35,9 @@ int16_t synth_get_wave(uint32_t tick)
       temp += (v->oscillator)(v->volume, v->period, tick);   //invoke oscillator
     }
   }
+
+  //update 1 voice each cycle
+  voice_update(&voices[tick % POLYPHONY]);
   
   if (temp > INT16_MAX){
     return INT16_MAX;
@@ -42,13 +45,6 @@ int16_t synth_get_wave(uint32_t tick)
     return INT16_MIN;
   } else{
     return temp;
-  }
-}
-
-void synth_env_update() {
-  uint8_t i;
-  for ( i = 0; i < POLYPHONY; i++) {
-    voice_update(&voices[i]);
   }
 }
 

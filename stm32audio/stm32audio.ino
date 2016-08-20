@@ -1,5 +1,6 @@
 #include "synth.h"
 #include "notes.h"
+#include "debug_arduino.h"
 
 #define TUNING 440
 #define led PC13
@@ -19,10 +20,6 @@ HardwareTimer sampleTimer(1);
 HardwareTimer pwmTimer(4);
 
 uint16_t playbuffer; //next value to play
-#define DEBUG_SIZE 200
-boolean debugWrite = true;
-uint16_t debugbuffer[DEBUG_SIZE];
-
 volatile uint32_t currentTick; // will overflow every 24 hours @22 microsecond ticks
 
 void play() {
@@ -41,9 +38,7 @@ void play() {
 
   //now we have 22 microseconds @44.1kHz to get next play value
   playbuffer = synth_get_wave(currentTick) + (0xFFFF/2);
-  if (debugWrite){
-    debugbuffer[currentTick % DEBUG_SIZE] = playbuffer;
-  }
+  dwrite_buffer(playbuffer);
 }
 
 
@@ -132,18 +127,12 @@ void commandRecieved(String cmd) {
       synth_note_off(tmp);
       break;
     case 'p':
-      Serial.println(TIMER_PERIOD);
-      Serial.println(sampleTimer.getPrescaleFactor());
-      Serial.println(sampleTimer.getOverflow());
+      dshow(TIMER_PERIOD);
+      dshow(sampleTimer.getPrescaleFactor());
+      dshow(sampleTimer.getOverflow());
       break;
     case 'd':
-      debugWrite = false;
-      for (tmp = 0;tmp < DEBUG_SIZE; tmp++){
-        Serial.print(debugbuffer[tmp],HEX);
-        Serial.print(' ');
-      }
-      Serial.println();
-      debugWrite = true;
+      dump_buffer();
       break;
   }
   Serial.println(cmd);
@@ -151,14 +140,11 @@ void commandRecieved(String cmd) {
 
 
 void loop() {
-  if (currentTick % 200 == 0) {
-    synth_env_update();
-  }
-  
   // send data only when you receive data:
   if (Serial.available() > 0) {
     serialEventRun();
   }
 }
+
 
 
