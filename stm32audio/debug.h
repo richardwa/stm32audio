@@ -8,6 +8,7 @@ extern "C" {
 #define dprintf(...)
 #define dshow(expression) 
 #else
+#include <stdio.h>
 #define dprintf(...) printf(__VA_ARGS__)
 #define dshow(expression) 
 #endif

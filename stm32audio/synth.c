@@ -17,7 +17,7 @@ const struct Voice model = {
   .adsr_phase = 1,
   .attack = 100,
   .decay = 200,
-  .sustain = 1,
+  .sustain = -2,
   .rel = 100
 };
 
@@ -58,7 +58,7 @@ void synth_note_on(uint8_t index, uint8_t velocity)
       noteMap[index] = i; //save index for note off to find us
       dprintf("setting voice %d\n", i);
       *v = model;
-      v->velocity = velocity * 0xFF/4;
+      v->velocity = velocity * 0xFF/2;
       v->period = note_periods[index];
       dprintf("voice set %d\n", v->volume);
       break;

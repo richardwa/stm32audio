@@ -19,9 +19,6 @@ int main()
   for (i = 0; i < 20000; i++) {
     playbuffer = synth_get_wave(i);
     printf("%d\n", playbuffer);
-    if (i%32 == 0){
-        synth_env_update();
-    }
     if (i == 1400000){
         synth_note_off(69);
     }

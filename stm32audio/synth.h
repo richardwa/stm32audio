@@ -5,7 +5,7 @@ extern "C" {
 #endif
 
 
-int32_t synth_get_wave(uint32_t tick);
+int16_t synth_get_wave(uint32_t tick);
 void synth_note_on(uint8_t index, uint8_t velocity);
 void synth_note_off(uint8_t index);
 

@@ -29,7 +29,7 @@ void play() {
   uint8_t clearbits = ~highbits;
   pwmTimer.setCompare(TIMER_CH2, highbits); //PB7
   //low bits
-  pwmTimer.setCompare(TIMER_CH1, playbuffer &  0xFF); //PB6
+  pwmTimer.setCompare(TIMER_CH1, playbuffer &  0x00FF); //PB6
 
   //writing to 8bit r2r for debug purposes
   GPIOA->regs->BSRR = highbits | (clearbits << 16);
