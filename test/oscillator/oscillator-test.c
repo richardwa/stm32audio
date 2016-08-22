@@ -6,7 +6,7 @@
 
 
 #define PERIOD  100
-#define SAMPLES (5*PERIOD)
+#define SAMPLES (PERIOD)
 
 //test function for reference
 #define PI 3.14159265
@@ -25,7 +25,7 @@ int main()
 //    printf("%d,", triangle(period,i));
 //    printf("%d,", square(period,i));
 //    printf("%d,", sine_actual(PERIOD,i));
-    printf("%d,", sine(PERIOD,i));
+    printf("%d,", sine2(0xFFF0,PERIOD,i));
     printf("\n");
   }
   return 0;

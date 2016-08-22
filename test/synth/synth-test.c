@@ -11,16 +11,16 @@
 int main()
 {
   int i;
-  uint32_t playbuffer;
+  int16_t playbuffer;
   notes_init(SAMPLE_RATE, TUNING);
   synth_note_on(69, 255);
   
   //synth_note_on(75, 255);
-  for (i = 0; i < 20000; i++) {
-    playbuffer = synth_get_wave(i);
-    printf("%d\n", playbuffer);
-    if (i == 1400000){
-        synth_note_off(69);
+  for (i = 0; i < 4000; i++) {
+
+    playbuffer = (synth_get_wave(i) / 256) << 8;
+    if (i>2000){
+        printf("%d\n", playbuffer);
     }
   }
   printf("\n");

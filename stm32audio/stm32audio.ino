@@ -5,6 +5,7 @@
 #define TUNING 440
 #define led PC13
 #define OVERCLOCKED 1
+#define BUTTON PB12
 //overclocked to 128 mhz
 
 #define SAMPLE_RATE 31250
@@ -41,7 +42,17 @@ void play() {
   dwrite_buffer(playbuffer);
 }
 
-
+uint8_t chord[] = {69,73,76,81,85,88,93,97,100};
+void chorus(int8_t vol){
+  for (uint8_t i=0;i<9;i++){
+    synth_note_on(chord[i], vol);
+  }
+}
+void chorus_off(){
+  for (uint8_t i=0;i<9;i++){
+    synth_note_off(chord[i]);
+  }
+}
 
 void setup() {
   //systick_disable();
@@ -83,18 +94,10 @@ void setup() {
   sampleTimer.refresh();
   sampleTimer.resume();
   
-  synth_note_on(69, 255);
-//  synth_note_on(73, 255);
-//  synth_note_on(76, 255);
-//  
-//  synth_note_on(81, 255);
-//  synth_note_on(85, 255);
-//  synth_note_on(88, 255);
-//  
-//  synth_note_on(93, 255);
-//  synth_note_on(97, 255);
-//  synth_note_on(100, 255);
+  chorus(200);
 
+  //configure input
+  pinMode(BUTTON, INPUT_PULLUP);
 }
 
 void serialEventRun(void) {
@@ -104,7 +107,7 @@ void serialEventRun(void) {
   }
 }
 uint8_t note = 69;
-uint8_t vol = 0xFF;
+uint8_t vol = 200;
 void commandRecieved(String cmd) {
   char chars[6];
   uint8_t tmp;
@@ -138,8 +141,19 @@ void commandRecieved(String cmd) {
   Serial.println(cmd);
 }
 
-
+int buttonState = HIGH; 
 void loop() {
+  int pushed = digitalRead(BUTTON);
+  if (pushed != buttonState){
+    if (pushed == HIGH){
+      chorus_off();
+    }else{
+      chorus(vol);
+    }
+    dshow(pushed);
+    buttonState = pushed;
+  }
+  
   // send data only when you receive data:
   if (Serial.available() > 0) {
     serialEventRun();

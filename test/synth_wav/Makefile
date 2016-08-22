@@ -29,7 +29,7 @@ clean:
 distclean: clean
 
 play: $(program_NAME)
+	rm -rf /tmp/sound.wav
 	./$(program_NAME)
 	play /tmp/sound.wav
-	rm /tmp/sound.wav
 

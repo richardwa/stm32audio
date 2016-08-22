@@ -18,10 +18,16 @@ int16_t triangle(uint16_t vol, uint16_t period, uint32_t phase)
     return (period - x) * 2 * vol / period - vol / 2;
   }
 }
-
+volatile int16_t result;
 int16_t test(uint16_t vol, uint16_t period, uint32_t phase)
 {
-  return sine(vol, period, sine(vol, period * 7 / 5, phase) + phase);
+  int8_t i;
+  result = sine2(vol/period, period * 7 / 5, phase);
+  for (i=0;i<10;i++){
+    result = sine2(vol/period, period * 7 / 5, result);
+  }
+  
+  return sine2(vol, period ,  phase);
 }
 
 //square wave is 2 twice as loud, so reducing its peak more
@@ -46,7 +52,7 @@ int16_t square(uint16_t vol, uint16_t period, uint32_t phase)
 //  b = -pi + 3
 //  c = pi/2
 //
-// scale x, x->x/B
+// scale x, x->x/A
 // scale y, f->A*f
 //   f(x) = -B(a(x/A)^3 + b(x/A)^2 + c(x/A))
 //
@@ -84,5 +90,37 @@ int16_t square(uint16_t vol, uint16_t period, uint32_t phase)
       //negative of first half
       return -SIN_FUNC(vol,x,period);
   };
+}
+
+//quadratic aprroximation of sine
+// base function:
+//  f(x)  =  -x^2 + 1
+//  this is really a cosine, but doesn't matter for us
+// scale x, x->x/A
+// scale y, f->A*f
+//   f(x) = B(-(x/A)^2 + 1)
+#define SIN2_FUNC(v,x,p) (v  -  v * x * x * 16 / p / p)
+  int16_t sine2(uint16_t vol, uint16_t period, uint32_t phase)
+{
+
+  int32_t v = vol/2;
+  int32_t x = phase % period;
+  uint8_t section = x * 4 / period;
+  switch (section) {
+    case 0:  //the is the fist quarter of the the wave
+      return SIN2_FUNC(v,x,period);
+    case 1:
+      x =  period / 2 - x; // mirror flip into first quater
+      return -SIN2_FUNC(v,x,period);
+    case 2:
+      x =  x - period / 2; // translate to first quater
+      //negative of first half
+      return -SIN2_FUNC(v,x,period);
+    case 3:
+      x =  x - period / 2; // translate to second quater
+      x =  period / 2 - x; // mirror flip into first quater
+      return SIN2_FUNC(v,x,period);
+  };
+
 }
 

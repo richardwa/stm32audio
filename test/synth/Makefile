@@ -29,5 +29,5 @@ clean:
 distclean: clean
 
 plot: $(program_NAME)
-	./$(program_NAME) | gnuplot -p -e "plot '<cat' using 1 "
+	./$(program_NAME) | gnuplot -p -e "plot '<cat' using 1"
 

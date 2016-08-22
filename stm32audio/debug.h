@@ -3,14 +3,15 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#define DEBUG 1
 
-#ifdef ARDUINO 
+#if DEBUG == 0
 #define dprintf(...)
 #define dshow(expression) 
 #else
 #include <stdio.h>
 #define dprintf(...) printf(__VA_ARGS__)
-#define dshow(expression) 
+#define dshow(expression) printf("# %s: %d", #expression , expression )
 #endif
 
 #ifdef __cplusplus
