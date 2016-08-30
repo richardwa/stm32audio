@@ -34,24 +34,47 @@ void play() {
 
   //writing to 8bit r2r for debug purposes
   GPIOA->regs->BSRR = highbits | (clearbits << 16);
-  
+
   currentTick++;
 
   //now we have 22 microseconds @44.1kHz to get next play value
-  playbuffer = synth_get_wave(currentTick) + (0xFFFF/2);
+  playbuffer = synth_get_wave(currentTick) + (0xFFFF / 2);
   dwrite_buffer(playbuffer);
 }
 
-uint8_t chord[] = {69,73,76,81,85,88,93,97,100};
-void chorus(int8_t vol){
-  for (uint8_t i=0;i<9;i++){
+uint8_t chord[] = {69, 73, 76};
+//uint8_t chord[] = {69,73,76,81,85,88,93,97,100};
+void chorus(int8_t vol) {
+  for (uint8_t i = 0; i < sizeof(chord) / sizeof(chord[0]); i++) {
     synth_note_on(chord[i], vol);
   }
 }
-void chorus_off(){
-  for (uint8_t i=0;i<9;i++){
+void chorus_off() {
+  for (uint8_t i = 0; i < sizeof(chord) / sizeof(chord[0]); i++) {
     synth_note_off(chord[i]);
   }
+}
+
+void setupPWM() {
+  //configure pwm
+  pwmTimer.setPrescaleFactor(1);
+  pwmTimer.setOverflow(255);
+  //(TIMER4->regs).bas->CR1 |= 1<<5; //use center-aligned pwm
+  pwmTimer.refresh();
+  pinMode(PB6, PWM);
+  pinMode(PB7, PWM);
+}
+
+void setupPlayTimer() {
+  //configure the sample play timer
+  sampleTimer.pause();
+  sampleTimer.setPrescaleFactor(1);
+  sampleTimer.setOverflow(TIMER_PERIOD);
+  sampleTimer.setMode(TIMER_CH1, TIMER_OUTPUT_COMPARE);
+  sampleTimer.setCompare(TIMER_CH1, 1);
+  sampleTimer.attachInterrupt(TIMER_CH1, play);
+  sampleTimer.refresh();
+  sampleTimer.resume();
 }
 
 void setup() {
@@ -76,25 +99,9 @@ void setup() {
   pinMode(PC15, OUTPUT); //our ground pin
   digitalWrite(PC15, 0);
 
-
-  //configure pwm
-  pwmTimer.setPrescaleFactor(1);
-  pwmTimer.setOverflow(255);
-  pwmTimer.refresh();
-  pinMode(PB6, PWM);
-  pinMode(PB7, PWM);
-
-  //configure the sample play timer
-  sampleTimer.pause();
-  sampleTimer.setPrescaleFactor(1);
-  sampleTimer.setOverflow(TIMER_PERIOD);
-  sampleTimer.setMode(TIMER_CH1, TIMER_OUTPUT_COMPARE);
-  sampleTimer.setCompare(TIMER_CH1, 1);
-  sampleTimer.attachInterrupt(TIMER_CH1, play);
-  sampleTimer.refresh();
-  sampleTimer.resume();
-  
-  chorus(200);
+  setupPWM();
+  setupPlayTimer();
+  chorus(255);
 
   //configure input
   pinMode(BUTTON, INPUT_PULLUP);
@@ -107,7 +114,7 @@ void serialEventRun(void) {
   }
 }
 uint8_t note = 69;
-uint8_t vol = 200;
+uint8_t vol = 255;
 void commandRecieved(String cmd) {
   char chars[6];
   uint8_t tmp;
@@ -141,19 +148,19 @@ void commandRecieved(String cmd) {
   Serial.println(cmd);
 }
 
-int buttonState = HIGH; 
+int buttonState = HIGH;
 void loop() {
   int pushed = digitalRead(BUTTON);
-  if (pushed != buttonState){
-    if (pushed == HIGH){
+  if (pushed != buttonState) {
+    if (pushed == HIGH) {
       chorus_off();
-    }else{
+    } else {
       chorus(vol);
     }
     dshow(pushed);
     buttonState = pushed;
   }
-  
+
   // send data only when you receive data:
   if (Serial.available() > 0) {
     serialEventRun();

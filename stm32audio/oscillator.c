@@ -11,8 +11,7 @@ int16_t sawtooth(uint16_t vol, uint16_t period, uint32_t phase)
 int16_t triangle(uint16_t vol, uint16_t period, uint32_t phase)
 {
   uint32_t x = phase % period;
-  uint32_t halfperiod = period / 2;
-  if (x < halfperiod) {
+  if (x < period / 2) {
     return x * 2 * vol / period - vol / 2;
   } else {
     return (period - x) * 2 * vol / period - vol / 2;
@@ -23,7 +22,7 @@ int16_t test(uint16_t vol, uint16_t period, uint32_t phase)
 {
   int8_t i;
   result = sine2(vol/period, period * 7 / 5, phase);
-  for (i=0;i<10;i++){
+  for (i=0;i<3;i++){
     result = sine2(vol/period, period * 7 / 5, result);
   }
   
@@ -60,15 +59,15 @@ int16_t square(uint16_t vol, uint16_t period, uint32_t phase)
 
 //since our sine cubic coeffcients are floats, we need to incorporate LEVEL into it
 //update these as level is updated
-#define SIN_ADJ 10000
-#define SIN_A  -4292  // -0.4292036732
-#define SIN_B  -1416  // -0.1415926536
-#define SIN_C  15708  //  1.570796327
-#define SIN_FUNC(v,x,p) \
-  ( SIN_A * 4 * 4 * v / SIN_ADJ * 4 * x / p * x / p * x / p \
-  + SIN_B * 4 * 4 * v / SIN_ADJ * x / p * x / p \
-  + SIN_C * 4 * v / SIN_ADJ * x / p )
-  int16_t sine(uint16_t vol, uint16_t period, uint32_t phase)
+#define SIN3_ADJ 10000
+#define SIN3_A  -4292  // -0.4292036732
+#define SIN3_B  -1416  // -0.1415926536
+#define SIN3_C  15708  //  1.570796327
+#define SIN3_FUNC(v,x,p) \
+  ( SIN3_A * 4 * 4 * v / SIN3_ADJ * 4 * x / p * x / p * x / p \
+  + SIN3_B * 4 * 4 * v / SIN3_ADJ * x / p * x / p \
+  + SIN3_C * 4 * v / SIN3_ADJ * x / p )
+  int16_t sine3(uint16_t vol, uint16_t period, uint32_t phase)
 {
 
   int32_t x = phase % period;
@@ -76,19 +75,19 @@ int16_t square(uint16_t vol, uint16_t period, uint32_t phase)
 
   switch (section) {
     case 0:  //the is the fist quarter of the the wave
-      return SIN_FUNC(vol,x,period);
+      return SIN3_FUNC(vol,x,period);
     case 1:
       x =  period / 2 - x; // mirror flip into first quater
-      return SIN_FUNC(vol,x,period);
+      return SIN3_FUNC(vol,x,period);
     case 2:
       x =  x - period / 2; // translate to first quater
       //negative of first half
-      return -SIN_FUNC(vol,x,period);
+      return -SIN3_FUNC(vol,x,period);
     case 3:
       x =  x - period / 2; // translate to second quater
       x =  period / 2 - x; // mirror flip into first quater
       //negative of first half
-      return -SIN_FUNC(vol,x,period);
+      return -SIN3_FUNC(vol,x,period);
   };
 }
 

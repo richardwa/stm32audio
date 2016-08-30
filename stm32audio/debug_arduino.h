@@ -31,7 +31,7 @@ void dump_buffer() {
   canWrite = false;
   for (i = 0; i < DEBUG_SIZE; i++) {
     Serial.print(debugbuffer[i]);
-    Serial.print(' ');
+    Serial.print('\t');
   }
   Serial.println();
   canWrite = true;

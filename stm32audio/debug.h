@@ -3,9 +3,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#define DEBUG 1
+#define DEBUG 0
 
-#if DEBUG == 0
+#ifdef ARDUINO
+#define dprintf(...)
+#define dshow(expression) 
+#elif DEBUG == 0 
 #define dprintf(...)
 #define dshow(expression) 
 #else
