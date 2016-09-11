@@ -4,7 +4,7 @@
 
 #define TUNING 440
 #define led PC13
-#define OVERCLOCKED 1
+#define OVERCLOCKED 0
 #define BUTTON PB12
 //overclocked to 128 mhz
 
@@ -27,13 +27,9 @@ void play() {
   //faster to set timer directly than pwmWrite do a timer lookup, then set compare
   //high bits
   uint8_t highbits = playbuffer >> 8;
-  uint8_t clearbits = ~highbits;
   pwmTimer.setCompare(TIMER_CH2, highbits); //PB7
   //low bits
   pwmTimer.setCompare(TIMER_CH1, playbuffer &  0x00FF); //PB6
-
-  //writing to 8bit r2r for debug purposes
-  GPIOA->regs->BSRR = highbits | (clearbits << 16);
 
   currentTick++;
 
@@ -46,17 +42,16 @@ uint8_t chord[] = {69, 73, 76};
 //uint8_t chord[] = {69,73,76,81,85,88,93,97,100};
 void chorus(int8_t vol) {
   for (uint8_t i = 0; i < sizeof(chord) / sizeof(chord[0]); i++) {
-    synth_note_on(chord[i], vol);
+    synth_note_on(0, chord[i], vol);
   }
 }
 void chorus_off() {
   for (uint8_t i = 0; i < sizeof(chord) / sizeof(chord[0]); i++) {
-    synth_note_off(chord[i]);
+    synth_note_off(0, chord[i]);
   }
 }
 
 void setupPWM() {
-  //configure pwm
   pwmTimer.setPrescaleFactor(1);
   pwmTimer.setOverflow(255);
   //(TIMER4->regs).bas->CR1 |= 1<<5; //use center-aligned pwm
@@ -80,24 +75,12 @@ void setupPlayTimer() {
 void setup() {
   //systick_disable();
   Serial.begin(BAUD);
-  delay(100);
   Serial.println("starting");
+  Serial1.begin(31250); //midi listener
   notes_init(SAMPLE_RATE, TUNING);
 
   // initialize digital pin 13 as an output.
   pinMode(led, OUTPUT);
-
-  //set our R2R ladder DAC to output
-  pinMode(PA0, OUTPUT);
-  pinMode(PA1, OUTPUT);
-  pinMode(PA2, OUTPUT);
-  pinMode(PA3, OUTPUT);
-  pinMode(PA4, OUTPUT);
-  pinMode(PA5, OUTPUT);
-  pinMode(PA6, OUTPUT);
-  pinMode(PA7, OUTPUT);
-  pinMode(PC15, OUTPUT); //our ground pin
-  digitalWrite(PC15, 0);
 
   setupPWM();
   setupPlayTimer();
@@ -107,12 +90,7 @@ void setup() {
   pinMode(BUTTON, INPUT_PULLUP);
 }
 
-void serialEventRun(void) {
-  String inputString = Serial.readString();
-  if (inputString != "") {
-    commandRecieved(inputString);
-  }
-}
+
 uint8_t note = 69;
 uint8_t vol = 255;
 void commandRecieved(String cmd) {
@@ -123,18 +101,18 @@ void commandRecieved(String cmd) {
       cmd.substring(1).toCharArray(chars, sizeof(chars));
       tmp = atoi( chars );
       vol = tmp;
-      synth_note_on(note, vol);
+      synth_note_on(0, note, vol);
       break;
     case 's':
       cmd.substring(1).toCharArray(chars, sizeof(chars));
       tmp = atoi( chars );
       note = tmp;
-      synth_note_on(note, vol);
+      synth_note_on(0, note, vol);
       break;
     case 'e':
       cmd.substring(1).toCharArray(chars, sizeof(chars));
       tmp = atoi( chars );
-      synth_note_off(tmp);
+      synth_note_off(0, tmp);
       break;
     case 'p':
       dshow(TIMER_PERIOD);
@@ -148,24 +126,69 @@ void commandRecieved(String cmd) {
   Serial.println(cmd);
 }
 
-int buttonState = HIGH;
-void loop() {
-  int pushed = digitalRead(BUTTON);
-  if (pushed != buttonState) {
-    if (pushed == HIGH) {
-      chorus_off();
-    } else {
-      chorus(vol);
-    }
-    dshow(pushed);
-    buttonState = pushed;
+#define MIDI_MESSAGE_SIZE 3
+uint8_t midiMessageIndex;
+uint8_t midiMessage[3];
+
+
+//midi messages are 3 bytes
+void handleMidi() {
+  uint8_t cmd = midiMessage[0] & 0xf0;
+  uint8_t channel = midiMessage[0] & 0x0f;
+  uint8_t note = midiMessage[1];
+  uint8_t velocity = midiMessage[2];
+
+  switch (cmd) {
+    case 0x90:
+      synth_note_on(channel, note, velocity * 2);
+      break;
+    case 0x80:
+      synth_note_off(channel, note);
+      break;
+    case 0xb0:
+      //
+      break;
+
   }
 
+  Serial.print("# ");
+  Serial.print(midiMessage[0], HEX);
+  Serial.print(" ");
+  Serial.print(midiMessage[1], HEX);
+  Serial.print(" ");
+  Serial.print(midiMessage[2], HEX);
+  Serial.println();
+}
+
+void loop()
+{
   // send data only when you receive data:
   if (Serial.available() > 0) {
-    serialEventRun();
+    String inputString = Serial.readString();
+    if (inputString != "") {
+      dshow(inputString);
+      commandRecieved(inputString);
+    }
+  }
+
+  while (Serial1.available())
+  {
+    uint8_t a = Serial1.read();
+    //only first byte can be greater than 127
+    if (a > 127) {
+      midiMessageIndex = 0;
+    }
+
+    midiMessage[midiMessageIndex] = a;
+    midiMessageIndex++;
+
+    if (midiMessageIndex >= MIDI_MESSAGE_SIZE) {
+      handleMidi();
+      midiMessageIndex = 0;
+    }
   }
 }
+
 
 
 

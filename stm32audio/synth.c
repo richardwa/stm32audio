@@ -8,12 +8,12 @@
 //highest pitch alternating +/- which comes to 20khz
 //lowest pitch is all one period in 0.05
 
-#define POLYPHONY 9
+#define POLYPHONY 16
 
 const struct Voice model = {
   .volume = 1,
   .ticks = 0,
-  .oscillator = &triangle,
+  .oscillator = &square,
   .adsr_phase = 1,
   .attack = 100,
   .decay = 200,
@@ -48,7 +48,7 @@ int16_t synth_get_wave(uint32_t tick)
   }
 }
 
-void synth_note_on(uint8_t index, uint8_t velocity)
+void synth_note_on(uint8_t channel, uint8_t index, uint8_t velocity)
 {
   uint8_t i;
   for (i = 0; i < POLYPHONY; i++) {
@@ -58,7 +58,7 @@ void synth_note_on(uint8_t index, uint8_t velocity)
       noteMap[index] = i; //save index for note off to find us
       dprintf("setting voice %d\n", i);
       *v = model;
-      v->velocity = velocity * 0xFF / 4;
+      v->velocity = velocity * 0xFF / POLYPHONY ;
       v->period = note_periods[index];
       dprintf("voice set %d\n", v->volume);
       break;
@@ -66,7 +66,7 @@ void synth_note_on(uint8_t index, uint8_t velocity)
   }
 }
 
-void synth_note_off(uint8_t index)
+void synth_note_off(uint8_t channel, uint8_t index)
 {
   int8_t voiceIndex = noteMap[index];
   if (voiceIndex >= 0) {

@@ -13,10 +13,10 @@ extern "C" {
 void dwrite_buffer(uint16_t val);
 void dump_buffer(void);
 #define dshow(expression) Serial.print("# "); Serial.print( #expression ); Serial.print( ": " ); Serial.println( expression )
-#define dprint(expression) Serial.println( expression )
+#define dprint(...) Serial.println( __VA_ARGS__ )
 
 
-#define DEBUG_SIZE 200
+#define DEBUG_SIZE 1024
 uint16_t debugbuffer[DEBUG_SIZE];
 uint16_t pos;
 bool canWrite = true;
@@ -29,7 +29,11 @@ void dwrite_buffer(uint16_t val) {
 void dump_buffer() {
   uint16_t i;
   canWrite = false;
-  for (i = 0; i < DEBUG_SIZE; i++) {
+  for (i = pos; i < DEBUG_SIZE; i++) {
+    Serial.print(debugbuffer[i]);
+    Serial.print('\t');
+  }
+  for (i = 0; i < pos; i++) {
     Serial.print(debugbuffer[i]);
     Serial.print('\t');
   }

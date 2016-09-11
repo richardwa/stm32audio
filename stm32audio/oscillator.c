@@ -33,9 +33,9 @@ int16_t test(uint16_t vol, uint16_t period, uint32_t phase)
 int16_t square(uint16_t vol, uint16_t period, uint32_t phase)
 {
   if (phase % period < period / 2)
-    return vol / 4;
+    return vol / 2;
   else
-    return -vol / 4;
+    return -vol / 2;
 }
 
 
