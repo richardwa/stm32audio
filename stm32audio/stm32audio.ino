@@ -73,11 +73,12 @@ void setupPlayTimer() {
 }
 
 void setup() {
+  notes_init(SAMPLE_RATE, TUNING);
+  
   //systick_disable();
   Serial.begin(BAUD);
   Serial.println("starting");
   Serial1.begin(31250); //midi listener
-  notes_init(SAMPLE_RATE, TUNING);
 
   // initialize digital pin 13 as an output.
   pinMode(led, OUTPUT);
@@ -174,6 +175,7 @@ void loop()
   while (Serial1.available())
   {
     uint8_t a = Serial1.read();
+    Serial.println(a, HEX);
     //only first byte can be greater than 127
     if (a > 127) {
       midiMessageIndex = 0;
