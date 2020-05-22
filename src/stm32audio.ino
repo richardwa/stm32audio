@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include "synth.h"
 #include "notes.h"
 #include "debug_arduino.h"
@@ -17,8 +18,8 @@
 #define BAUD 115200
 #endif
 
-HardwareTimer sampleTimer(1);
-HardwareTimer pwmTimer(4);
+HardwareTimer sampleTimer(TIM1);
+HardwareTimer pwmTimer(TIM4);
 
 uint16_t playbuffer; //next value to play
 volatile uint32_t currentTick; // will overflow every 24 hours @22 microsecond ticks
@@ -27,9 +28,9 @@ void play() {
   //faster to set timer directly than pwmWrite do a timer lookup, then set compare
   //high bits
   uint8_t highbits = playbuffer >> 8;
-  pwmTimer.setCompare(TIMER_CH2, highbits); //PB7
+  pwmTimer.setCaptureCompare(2, highbits); //PB7
   //low bits
-  pwmTimer.setCompare(TIMER_CH1, playbuffer &  0x00FF); //PB6
+  pwmTimer.setCaptureCompare(1, playbuffer &  0x00FF); //PB6
 
   currentTick++;
 
@@ -56,8 +57,8 @@ void setupPWM() {
   pwmTimer.setOverflow(255);
   //(TIMER4->regs).bas->CR1 |= 1<<5; //use center-aligned pwm
   pwmTimer.refresh();
-  pinMode(PB6, PWM);
-  pinMode(PB7, PWM);
+  pinMode(PB6, TIMER_OUTPUT_COMPARE_PWM1);
+  pinMode(PB7, TIMER_OUTPUT_COMPARE_PWM1);
 }
 
 void setupPlayTimer() {
@@ -65,9 +66,9 @@ void setupPlayTimer() {
   sampleTimer.pause();
   sampleTimer.setPrescaleFactor(1);
   sampleTimer.setOverflow(TIMER_PERIOD);
-  sampleTimer.setMode(TIMER_CH1, TIMER_OUTPUT_COMPARE);
-  sampleTimer.setCompare(TIMER_CH1, 1);
-  sampleTimer.attachInterrupt(TIMER_CH1, play);
+  sampleTimer.setMode(1, TIMER_OUTPUT_COMPARE);
+  sampleTimer.setCaptureCompare(1, 1);
+ // sampleTimer.attachInterrupt(1, play);
   sampleTimer.refresh();
   sampleTimer.resume();
 }

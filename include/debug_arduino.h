@@ -6,8 +6,8 @@ extern "C" {
 #define DEBUG 1
 
 #if DEBUG == 1
-#include <stdint.h>
 #include <Arduino.h>
+#include <stdint.h>
 #include <stdbool.h>
 
 void dwrite_buffer(uint16_t val);
