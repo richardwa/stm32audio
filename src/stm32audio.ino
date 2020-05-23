@@ -68,7 +68,7 @@ void setupPlayTimer() {
   sampleTimer.setOverflow(TIMER_PERIOD);
   sampleTimer.setMode(1, TIMER_OUTPUT_COMPARE);
   sampleTimer.setCaptureCompare(1, 1);
- // sampleTimer.attachInterrupt(1, play);
+  sampleTimer.attachInterrupt(1, (void (*)(HardwareTimer *)) play);
   sampleTimer.refresh();
   sampleTimer.resume();
 }
